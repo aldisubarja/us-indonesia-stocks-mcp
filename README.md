@@ -1,113 +1,61 @@
-# 🇮🇩 Indonesia Stocks MCP
+# indonesia-stocks-mcp 🏦
 
-**MCP server** for Indonesian stock fundamental data — income statement, balance sheet, cash flow, and ratios from **RTI** and official **IDX InlineXBRL** filings, plus real-time prices from **Yahoo Finance**.
+MCP server for **Indonesian stock fundamentals** via Yahoo Finance. Get financial statements, key metrics, prices, and dividends — all through `.JK` suffixed tickers.
 
-## Tools
-
-### Yahoo Finance (live — no local data needed)
-| Tool | Description |
-|------|-------------|
-| `get_current_price` | Latest stock price + market cap, PE, dividend yield |
-| `get_historical_prices` | OHLCV historical data |
-
-### RTI (local HTML data)
-| Tool | Description |
-|------|-------------|
-| `rti_get_general_info` | Company: name, listed date, shares, board, currency |
-| `rti_get_income_statement` | Full P&L — 27 fields (sales → net income → EPS) |
-| `rti_get_balance_sheet` | Balance sheet — 25 fields (assets, liabilities, equity) |
-| `rti_get_cash_flow` | Cash flow — 17 fields (operating, investing, financing) |
-| `rti_get_ratios` | EPS, PER, ROE, NPM, PBV |
-
-### IDX InlineXBRL (local extracted HTML)
-| Tool | Description |
-|------|-------------|
-| `idx_get_general_info` | Official IDX company filings |
-| `idx_get_balance_sheet` | Official IDX balance sheet |
-
-### Utility
-| Tool | Description |
-|------|-------------|
-| `list_available_data` | Scan `STOCKS_DATA_DIR` for available stocks and periods |
-
-## Installation
-
-### Prerequisites
-- Python 3.10+
-- `uv` (recommended) or `pip`
-
-### Quick Start
+## Quick Start
 
 ```bash
-# Clone
-git clone https://github.com/aldisubarja/indonesia-stocks-mcp.git
-cd indonesia-stocks-mcp
-
-# Install with uv
-uv pip install -e .
-
-# Or with pip
-pip install -e .
+# Install & run (one command, no local data needed)
+uvx indonesia-stocks-mcp
 ```
 
-### Configure Hermes Agent
+## Claude / Codex / Hermes Config
 
-Add to `~/.hermes/config.yaml`:
-
-```yaml
-mcp_servers:
-  idn-stocks:
-    command: "uv"
-    args: ["run", "--directory", "/path/to/indonesia-stocks-mcp", "indonesia-stocks-mcp"]
-    env:
-      STOCKS_DATA_DIR: "/home/user/saham"
+```json
+{
+  "mcpServers": {
+    "indonesia-stocks": {
+      "command": "uvx",
+      "args": ["indonesia-stocks-mcp"]
+    }
+  }
+}
 ```
 
-Then restart Hermes Agent. Tools appear as `mcp_idn_stocks_*`.
+## Available Tools
 
-## Data Directory Structure
+| Tool | Description |
+|------|-------------|
+| `get_stock_info` | Comprehensive stock overview: price, valuation (PE, PB, PEG), market cap, sector, analyst targets, beta, and more |
+| `get_balance_sheet` | Balance sheet (neraca): assets, liabilities, equity — 40-50+ line items. Supports annual & quarterly. |
+| `get_income_statement` | Income statement (laba rugi): revenue, gross profit, operating income, net income, EPS — 30+ line items |
+| `get_cash_flow` | Cash flow (arus kas): operating/investing/financing activities, free cash flow, capex — 30+ line items |
+| `get_key_metrics` | All key ratios in one call: ROE, ROA, margins, DER, CR, revenue/earnings growth, FCF, PE, PB, PEG, dividend yield |
+| `get_current_price` | Quick price check with basic info |
+| `get_historical_prices` | OHLCV historical data for charting |
+| `get_dividend_history` | Dividend payout history |
 
-Set `STOCKS_DATA_DIR` environment variable (default: `~/saham`).
+## Data Sources
+
+All data from **Yahoo Finance** using `.JK` suffix (JKT = Jakarta Stock Exchange). Covers all Indonesian stocks listed on IDX.
+
+## Stock Codes
+
+Use standard ticker codes (without .JK — added automatically):
 
 ```
-$STOCKS_DATA_DIR/
-├── idx/                              # IDX InlineXBRL data
-│   └── {year}/Q{quarter}/{code}/
-│       └── inlineXBRL/               # extracted ZIP contents
-│           ├── GeneralInfo.html
-│           ├── BalanceSheet.html
-│           └── IncomeStatement.html
-│
-└── rti/                              # RTI data
-    ├── daftar_saham.xlsx             # stock list from IDX
-    ├── income_statement/
-    │   └── {end_period}/{period}/{code}.html
-    ├── balance_sheet/
-    │   └── {end_period}/{period}/{code}.html
-    └── cash_flow/
-        └── {end_period}/{period}/{code}.html
+BBRI    → Bank Rakyat Indonesia
+BBCA    → Bank Central Asia
+TLKM    → Telkom Indonesia
+ASII    → Astra International
+UNVR    → Unilever Indonesia
+GOTO    → GoTo Gojek Tokopedia
+ADRO    → Adaro Energy
+ANTM    → Aneka Tambang
+...
 ```
 
-### Getting Data
+## Requirements
 
-This MCP server **reads** local data — it does NOT scrape. Use the upstream scraper to download:
-
-```bash
-git clone https://github.com/basnugroho/indonesia-stocks-scraper
-# Follow instructions to download RTI + IDX data
-# Point STOCKS_DATA_DIR to your download directory
-```
-
-## Example Usage
-
-After connecting to Hermes:
-
-> "Get BBRI's latest financial ratios and income statement"
-
-The agent will call:
-1. `mcp_idn_stocks_rti_get_income_statement(stock_code="BBRI", period="annual")`
-2. `mcp_idn_stocks_rti_get_ratios(stock_code="BBRI")`
-
-## License
-
-MIT
+- Python >= 3.10
+- Internet connection (data is fetched live, not stored locally)
