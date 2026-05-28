@@ -1,6 +1,6 @@
 # us-indonesia-stocks-mcp 🇺🇸🇮🇩📈
 
-MCP server for **US and Indonesian stock data** via Yahoo Finance. Get financial statements, key metrics, prices, historical OHLCV, and dividends — all live, no local data, no RTI, no IDX scraper.
+MCP server for **US and Indonesian stock data** via Yahoo Finance. Get financial statements, key metrics, prices, historical OHLCV, and dividends.
 
 ## Quick Start
 
