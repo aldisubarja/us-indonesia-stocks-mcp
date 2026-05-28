@@ -9,13 +9,6 @@ MCP server for **US and Indonesian stock data** via Yahoo Finance. Get financial
 uvx us-indonesia-stocks-mcp
 ```
 
-Backward-compatible aliases:
-
-```bash
-uvx global-stocks-mcp
-uvx indonesia-stocks-mcp
-```
-
 ## Claude / Codex / Hermes Config
 
 ```json

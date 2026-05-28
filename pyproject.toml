@@ -13,8 +13,6 @@ dependencies = [
 
 [project.scripts]
 us-indonesia-stocks-mcp = "indonesia_stocks_mcp.server:main"
-global-stocks-mcp = "indonesia_stocks_mcp.server:main"
-indonesia-stocks-mcp = "indonesia_stocks_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]
