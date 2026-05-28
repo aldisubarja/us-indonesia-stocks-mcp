@@ -1,17 +1,18 @@
-# global-stocks-mcp 🌍📈
+# us-indonesia-stocks-mcp 🇺🇸🇮🇩📈
 
-MCP server for **Indonesian and US stock data** via Yahoo Finance. Get financial statements, key metrics, prices, historical OHLCV, and dividends — all live, no local data, no RTI, no IDX scraper.
+MCP server for **US and Indonesian stock data** via Yahoo Finance. Get financial statements, key metrics, prices, historical OHLCV, and dividends — all live, no local data, no RTI, no IDX scraper.
 
 ## Quick Start
 
 ```bash
 # Install & run (one command, no local data needed)
-uvx global-stocks-mcp
+uvx us-indonesia-stocks-mcp
 ```
 
-Backward-compatible alias:
+Backward-compatible aliases:
 
 ```bash
+uvx global-stocks-mcp
 uvx indonesia-stocks-mcp
 ```
 
@@ -20,9 +21,9 @@ uvx indonesia-stocks-mcp
 ```json
 {
   "mcpServers": {
-    "global-stocks": {
+    "us-indonesia-stocks": {
       "command": "uvx",
-      "args": ["global-stocks-mcp"]
+      "args": ["us-indonesia-stocks-mcp"]
     }
   }
 }

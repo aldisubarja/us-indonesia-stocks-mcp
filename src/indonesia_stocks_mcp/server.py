@@ -2,7 +2,7 @@
 
 All data sourced from Yahoo Finance — no local data, no scrapers.
 Supports IDX (.JK suffix) and US markets.
-Install: uvx global-stocks-mcp
+Install: uvx us-indonesia-stocks-mcp
 """
 
 import json
@@ -14,7 +14,7 @@ from mcp.types import Tool, TextContent
 
 from .yahoo import YahooFinance
 
-server = Server("global-stocks-mcp")
+server = Server("us-indonesia-stocks-mcp")
 yahoo = YahooFinance()
 
 

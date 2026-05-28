@@ -1,6 +1,6 @@
 [project]
-name = "global-stocks-mcp"
-version = "0.3.0"
+name = "us-indonesia-stocks-mcp"
+version = "0.4.0"
 description = "MCP server for Indonesian and US stock fundamentals via Yahoo Finance — financial statements, key metrics, prices, and dividends. Install with uvx."
 readme = "README.md"
 license = {text = "MIT"}
@@ -12,6 +12,7 @@ dependencies = [
 ]
 
 [project.scripts]
+us-indonesia-stocks-mcp = "indonesia_stocks_mcp.server:main"
 global-stocks-mcp = "indonesia_stocks_mcp.server:main"
 indonesia-stocks-mcp = "indonesia_stocks_mcp.server:main"
 

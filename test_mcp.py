@@ -22,4 +22,4 @@ pp("3. US get_current_price AAPL", y.get_current_price("AAPL", market="US"))
 pp("4. US get_stock_info SPY", y.get_stock_info("SPY", market="US"))
 pp("5. US get_historical_prices NVDA", y.get_historical_prices("NVDA", market="US", start_date="2025-01-01", interval="1mo"))
 
-print("✅ SMOKE TEST DONE")
+print("✅ SMOKE TEST DONE — us-indonesia-stocks-mcp")
