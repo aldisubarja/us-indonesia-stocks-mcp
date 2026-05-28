@@ -1,4 +1,6 @@
-"""Yahoo Finance wrapper for Indonesian stocks (.JK suffix).
+"""Yahoo Finance wrapper for US & Indonesian stocks.
+
+Multi-market: pass market="ID" for IDX (.JK suffix), market="US" for US stocks (no suffix).
 
 Provides: stock info, balance sheet, income statement, cash flow,
 key metrics, historical prices, current price, dividend history.
@@ -12,23 +14,37 @@ import yfinance as yf
 
 
 class YahooFinance:
-    """Fetch Indonesian stock data from Yahoo Finance via yfinance."""
+    """Fetch US & Indonesian stock data from Yahoo Finance via yfinance."""
+
+    MARKET_SUFFIX: dict[str, str] = {
+        "ID": ".JK",
+        "US": "",
+    }
+
+    MARKET_CURRENCY: dict[str, str] = {
+        "ID": "IDR",
+        "US": "USD",
+    }
 
     def __init__(self) -> None:
         self._tickers: dict[str, yf.Ticker] = {}
 
-    def _get_ticker(self, stock_code: str) -> yf.Ticker:
+    def _get_ticker(self, stock_code: str, market: str = "ID") -> yf.Ticker:
         """Get or create a yfinance Ticker object (cached)."""
-        symbol = f"{stock_code.upper()}.JK"
+        suffix = self.MARKET_SUFFIX.get(market, "")
+        symbol = f"{stock_code.upper()}{suffix}"
         if symbol not in self._tickers:
             self._tickers[symbol] = yf.Ticker(symbol)
         return self._tickers[symbol]
 
+    def _currency(self, market: str) -> str:
+        return self.MARKET_CURRENCY.get(market, "USD")
+
     # ── Stock Info ──────────────────────────────────────────────────────
 
-    def get_stock_info(self, stock_code: str) -> dict[str, Any]:
+    def get_stock_info(self, stock_code: str, market: str = "ID") -> dict[str, Any]:
         """Get comprehensive stock information and valuation metrics."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         info = ticker.info
 
         def _get(*keys: str, default: Any = None) -> Any:
@@ -38,9 +54,13 @@ class YahooFinance:
                     return v
             return default
 
+        suffix = self.MARKET_SUFFIX.get(market, "")
+        currency = self._currency(market)
+
         return {
             "stock_code": stock_code.upper(),
-            "ticker": f"{stock_code.upper()}.JK",
+            "market": market,
+            "ticker": f"{stock_code.upper()}{suffix}",
             "name": _get("longName", "shortName"),
             "sector": _get("sector"),
             "industry": _get("industry"),
@@ -81,16 +101,16 @@ class YahooFinance:
             "target_high": _get("targetHighPrice"),
             "target_low": _get("targetLowPrice"),
             # Currency
-            "currency": _get("currency", "financialCurrency", default="IDR"),
+            "currency": _get("currency", "financialCurrency", default=currency),
         }
 
     # ── Financial Statements ────────────────────────────────────────────
 
     def get_balance_sheet(
-        self, stock_code: str, period: str = "annual", all_periods: bool = True
+        self, stock_code: str, period: str = "annual", all_periods: bool = True, market: str = "ID"
     ) -> dict[str, Any]:
         """Get balance sheet (neraca)."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         if period == "quarterly":
             df = ticker.quarterly_balance_sheet
         else:
@@ -98,10 +118,10 @@ class YahooFinance:
         return self._format_statement(df, stock_code, period, "balance_sheet", all_periods)
 
     def get_income_statement(
-        self, stock_code: str, period: str = "annual", all_periods: bool = True
+        self, stock_code: str, period: str = "annual", all_periods: bool = True, market: str = "ID"
     ) -> dict[str, Any]:
         """Get income statement (laba rugi)."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         if period == "quarterly":
             df = ticker.quarterly_financials
         else:
@@ -109,10 +129,10 @@ class YahooFinance:
         return self._format_statement(df, stock_code, period, "income_statement", all_periods)
 
     def get_cash_flow(
-        self, stock_code: str, period: str = "annual", all_periods: bool = True
+        self, stock_code: str, period: str = "annual", all_periods: bool = True, market: str = "ID"
     ) -> dict[str, Any]:
         """Get cash flow statement (arus kas)."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         if period == "quarterly":
             df = ticker.quarterly_cashflow
         else:
@@ -165,9 +185,9 @@ class YahooFinance:
 
     # ── Key Metrics ─────────────────────────────────────────────────────
 
-    def get_key_metrics(self, stock_code: str) -> dict[str, Any]:
+    def get_key_metrics(self, stock_code: str, market: str = "ID") -> dict[str, Any]:
         """Get all key financial ratios and growth metrics in one call."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         info = ticker.info
 
         def _g(*keys: str, default: Any = None) -> Any:
@@ -177,8 +197,11 @@ class YahooFinance:
                     return v
             return default
 
+        currency = self._currency(market)
+
         return {
             "stock_code": stock_code.upper(),
+            "market": market,
             "name": _g("longName", "shortName"),
             # Profitability
             "return_on_equity": _g("returnOnEquity"),
@@ -212,14 +235,14 @@ class YahooFinance:
             "market_cap": _g("marketCap"),
             "enterprise_value": _g("enterpriseValue"),
             "beta": _g("beta"),
-            "currency": _g("currency", "financialCurrency", default="IDR"),
+            "currency": _g("currency", "financialCurrency", default=currency),
         }
 
     # ── Prices ──────────────────────────────────────────────────────────
 
-    def get_current_price(self, stock_code: str) -> dict[str, Any]:
+    def get_current_price(self, stock_code: str, market: str = "ID") -> dict[str, Any]:
         """Get current/latest stock price with basic info."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         info = ticker.info
         hist = ticker.history(period="1d")
 
@@ -229,11 +252,15 @@ class YahooFinance:
         else:
             price = info.get("previousClose") or info.get("regularMarketPrice")
 
+        suffix = self.MARKET_SUFFIX.get(market, "")
+        currency = self._currency(market)
+
         return {
             "stock_code": stock_code.upper(),
-            "ticker": f"{stock_code.upper()}.JK",
+            "market": market,
+            "ticker": f"{stock_code.upper()}{suffix}",
             "price": round(price, 2) if price else None,
-            "currency": "IDR",
+            "currency": currency,
             "name": info.get("longName") or info.get("shortName"),
             "market_cap": info.get("marketCap"),
             "pe_ratio": info.get("trailingPE"),
@@ -248,6 +275,7 @@ class YahooFinance:
         start_date: str,
         end_date: str | None = None,
         interval: str = "1d",
+        market: str = "ID",
     ) -> dict[str, Any]:
         """Get historical OHLCV data."""
         from datetime import datetime
@@ -255,12 +283,13 @@ class YahooFinance:
         if end_date is None:
             end_date = datetime.now().strftime("%Y-%m-%d")
 
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         df = ticker.history(start=start_date, end=end_date, interval=interval)
 
         if df.empty:
             return {
                 "stock_code": stock_code.upper(),
+                "market": market,
                 "start_date": start_date,
                 "end_date": end_date,
                 "data": [],
@@ -280,6 +309,7 @@ class YahooFinance:
 
         return {
             "stock_code": stock_code.upper(),
+            "market": market,
             "start_date": start_date,
             "end_date": end_date,
             "interval": interval,
@@ -288,36 +318,37 @@ class YahooFinance:
 
     # ── Dividends ───────────────────────────────────────────────────────
 
-    def get_dividend_history(self, stock_code: str) -> dict[str, Any]:
+    def get_dividend_history(self, stock_code: str, market: str = "ID") -> dict[str, Any]:
         """Get dividend payout history."""
-        ticker = self._get_ticker(stock_code)
+        ticker = self._get_ticker(stock_code, market)
         div_df = ticker.dividends
 
         if div_df is None or div_df.empty:
             return {
                 "stock_code": stock_code.upper(),
+                "market": market,
                 "dividends": [],
                 "message": "No dividend history available",
             }
 
         dividends = []
-        for idx, val in div_df.items():
+        for date, amount in div_df.items():
             dividends.append({
-                "date": idx.strftime("%Y-%m-%d") if hasattr(idx, "strftime") else str(idx),
-                "dividend": round(float(val), 2),
-                "currency": "IDR",
+                "date": date.strftime("%Y-%m-%d") if hasattr(date, "strftime") else str(date),
+                "amount": round(float(amount), 2),
             })
 
         return {
             "stock_code": stock_code.upper(),
-            "currency": "IDR",
+            "market": market,
             "dividends": dividends,
         }
 
 
 def _is_nan(val: Any) -> bool:
-    """Check if value is NaN (works with pandas/numpy)."""
+    """Check if a value is NaN."""
     try:
-        return bool(val != val)  # NaN != NaN
-    except Exception:
+        import math
+        return math.isnan(float(val))
+    except (TypeError, ValueError):
         return False

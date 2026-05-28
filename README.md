@@ -1,11 +1,17 @@
-# indonesia-stocks-mcp 🏦
+# global-stocks-mcp 🌍📈
 
-MCP server for **Indonesian stock fundamentals** via Yahoo Finance. Get financial statements, key metrics, prices, and dividends — all through `.JK` suffixed tickers.
+MCP server for **Indonesian and US stock data** via Yahoo Finance. Get financial statements, key metrics, prices, historical OHLCV, and dividends — all live, no local data, no RTI, no IDX scraper.
 
 ## Quick Start
 
 ```bash
 # Install & run (one command, no local data needed)
+uvx global-stocks-mcp
+```
+
+Backward-compatible alias:
+
+```bash
 uvx indonesia-stocks-mcp
 ```
 
@@ -14,9 +20,9 @@ uvx indonesia-stocks-mcp
 ```json
 {
   "mcpServers": {
-    "indonesia-stocks": {
+    "global-stocks": {
       "command": "uvx",
-      "args": ["indonesia-stocks-mcp"]
+      "args": ["global-stocks-mcp"]
     }
   }
 }
@@ -24,36 +30,61 @@ uvx indonesia-stocks-mcp
 
 ## Available Tools
 
-| Tool | Description |
-|------|-------------|
-| `get_stock_info` | Comprehensive stock overview: price, valuation (PE, PB, PEG), market cap, sector, analyst targets, beta, and more |
-| `get_balance_sheet` | Balance sheet (neraca): assets, liabilities, equity — 40-50+ line items. Supports annual & quarterly. |
-| `get_income_statement` | Income statement (laba rugi): revenue, gross profit, operating income, net income, EPS — 30+ line items |
-| `get_cash_flow` | Cash flow (arus kas): operating/investing/financing activities, free cash flow, capex — 30+ line items |
-| `get_key_metrics` | All key ratios in one call: ROE, ROA, margins, DER, CR, revenue/earnings growth, FCF, PE, PB, PEG, dividend yield |
-| `get_current_price` | Quick price check with basic info |
-| `get_historical_prices` | OHLCV historical data for charting |
-| `get_dividend_history` | Dividend payout history |
+- `get_stock_info` — comprehensive stock overview: price, valuation (PE, PB, PEG), market cap, sector, analyst targets, beta, and more
+- `get_balance_sheet` — balance sheet (neraca): assets, liabilities, equity; annual or quarterly
+- `get_income_statement` — income statement (laba rugi): revenue, gross profit, operating income, net income, EPS
+- `get_cash_flow` — cash flow (arus kas): operating/investing/financing, free cash flow, capex
+- `get_key_metrics` — key ratios: ROE, ROA, margins, DER, CR, revenue/earnings growth, FCF, PE, PB, PEG, dividend yield
+- `get_current_price` — quick price check with basic info
+- `get_historical_prices` — OHLCV historical data for charting / backtesting
+- `get_dividend_history` — dividend payout history
 
-## Data Sources
+## Market Support
 
-All data from **Yahoo Finance** using `.JK` suffix (JKT = Jakarta Stock Exchange). Covers all Indonesian stocks listed on IDX.
+Pass `market` in every tool call:
 
-## Stock Codes
+- `market="ID"` → Indonesian stocks, automatically adds `.JK`
+- `market="US"` → US stocks, uses ticker as-is
 
-Use standard ticker codes (without .JK — added automatically):
+Default is `ID` for backward compatibility.
 
+## Examples
+
+### Indonesian stocks
+
+```json
+{"stock_code": "BBRI", "market": "ID"}
 ```
-BBRI    → Bank Rakyat Indonesia
-BBCA    → Bank Central Asia
-TLKM    → Telkom Indonesia
-ASII    → Astra International
-UNVR    → Unilever Indonesia
-GOTO    → GoTo Gojek Tokopedia
-ADRO    → Adaro Energy
-ANTM    → Aneka Tambang
-...
+
+Resolves to `BBRI.JK`
+
+### US stocks
+
+```json
+{"stock_code": "AAPL", "market": "US"}
 ```
+
+Resolves to `AAPL`
+
+### Historical daily prices
+
+```json
+{
+  "stock_code": "SPY",
+  "market": "US",
+  "start_date": "2020-01-01",
+  "end_date": "2025-01-01",
+  "interval": "1d"
+}
+```
+
+## Notes
+
+- Data source: **Yahoo Finance**
+- Indonesian stocks use Yahoo suffix `.JK`
+- US stocks use plain tickers like `AAPL`, `MSFT`, `SPY`, `NVDA`
+- Data availability depends on Yahoo Finance coverage
+- Historical intervals supported: `1d`, `1wk`, `1mo`
 
 ## Requirements
 
